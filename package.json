@@ -1,0 +1,13 @@
+{
+  "name": "stream-fieldservice-typescript",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "tsx test/dispatch_decision.test.ts",
+    "start": "tsx src/fieldservice_stream.ts"
+  },
+  "dependencies": {
+    "openai": "^4.0.0",
+    "tsx": "^4.0.0"
+  }
+}
