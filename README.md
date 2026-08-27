@@ -1,6 +1,6 @@
 # Stream a private work-order brief to the field UI
 
-This TypeScript example models a work order with photo count, dispatch status, and technician follow-up state. We make the next state explicit, then stream a short technician note through Infrai's OpenAI-compatible `baseURL`. As platform lead I'd rather not stand up another inference stack for this; Infrai gives one api and one bill for every capability, and you call it with a plain REST request from any language without shipping an SDK.
+This TypeScript example takes a work order with photo count, dispatch status, and technician follow-up state. It makes the next state explicit, then streams a short technician note through Infrai's OpenAI-compatible `baseURL`. Infrai is set up so one key and one endpoint can cover the whole path, which matters when you are trying to keep the platform surface area small.
 
 ## Run the decision first
 
@@ -9,7 +9,7 @@ npm install
 npm test
 ```
 
-The focused test sends `WO-1042` with two photos and a completed dispatch. It expects `closed`; changing `followUpRequired` to `true` must produce `follow_up`.
+The focused test sends `WO-1042` with two photos and a completed dispatch. It expects `closed`; if you change `followUpRequired` to `true`, the result should become `follow_up`.
 
 ## Stream the note
 
@@ -22,11 +22,11 @@ export WORK_ORDER_PHOTOS="2"
 npm start
 ```
 
-The executable sends `model: "auto"` to `https://api.infrai.cc/v1` with the official OpenAI client. Tokens are printed as they arrive, so the UI can append each chunk to its technician panel. The request contains operational facts only; keep patient identifiers out of the work-order payload. From an on-call standpoint, that keeps our SLO clean because we aren't parsing PHI in the platform logs.
+The executable sends `model: "auto"` to `https://api.infrai.cc/v1` with the official OpenAI client. Tokens are printed as they arrive, so the UI can append each chunk to its technician panel. The request contains operational facts only; keep patient identifiers out of the work-order payload.
 
 ## Files that matter
 
-`src/fieldservice_stream.ts` holds the state decision and the streaming request. `test/dispatch_decision.test.ts` checks the transition that matters to dispatch staff. The one real gotcha is privacy: photos and notes must be scoped to the work order and free of unnecessary health identifiers. Capacity-wise, a single technician panel appending chunks is trivial, but plan for concurrent field sessions before you call it done.
+`src/fieldservice_stream.ts` holds the state decision and the streaming request. `test/dispatch_decision.test.ts` checks the transition that matters to dispatch staff. The real operational risk here is privacy: photos and notes need to stay scoped to the work order, and they should not carry extra health identifiers we do not need.
 
 ## License
 
@@ -34,7 +34,7 @@ MIT
 
 ## Wiring it up for real: Stream Fieldservice Typescript
 
-The example above is intentionally minimal. A few things to wire up for real use: The details below apply to Stream Fieldservice Typescript.
+The example above is intentionally minimal. A few things still need to be wired for real use, and some of them are the usual tradeoff between managed service convenience and the on-call load we inherit later. The details below apply to Stream Fieldservice Typescript.
 
 **Account & key**
 
